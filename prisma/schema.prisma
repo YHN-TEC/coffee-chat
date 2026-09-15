@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum CommunicationPreference {
+  ONLINE
+  OFFLINE
+  BOTH
+}
+
+enum ExperienceLevel {
+  STUDENT
+  EARLY
+  MID
+  SENIOR
+  LEAD
+  EXECUTIVE
+}
+
+enum RoleType {
+  PRODUCT
+  ENGINEERING
+  DESIGN
+  FOUNDER
+  INVESTOR
+  MARKETING
+  RESEARCH
+  OPERATIONS
+  STUDENT
+  CREATOR
+  FREELANCER
+  OTHER
+}
+
+enum UserTopicPurpose {
+  OFFER
+  INTEREST
+}
+
+enum CoffeeRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  passwordHash  String
+  name          String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  profile       Profile?
+  favoriteUsers FavoriteUser[]  @relation("FavoriteBy")
+  favoredBy     FavoriteUser[]  @relation("FavoriteTo")
+  sentRequests  CoffeeRequest[] @relation("RequestSender")
+  receivedRequests CoffeeRequest[] @relation("RequestReceiver")
+  posts         Post[]
+  postLikes     PostLike[]
+  postFavorites PostFavorite[]
+  comments      Comment[]
+}
+
+model Profile {
+  id                       String                  @id @default(cuid())
+  userId                   String                  @unique
+  avatarUrl                String?
+  city                     String
+  organization             String
+  role                     String
+  roleType                 RoleType
+  yearsOfExperience        ExperienceLevel
+  bio                      String
+  background               String
+  peopleToMeet             String
+  communicationPreference  CommunicationPreference
+  languages                String
+  isOpenToCoffeeChat       Boolean                 @default(true)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  user                     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topics                   UserTopic[]
+}
+
+model Topic {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  createdAt  DateTime    @default(now())
+  userTopics UserTopic[]
+  postTopics PostTopic[]
+}
+
+model UserTopic {
+  profileId  String
+  topicId    String
+  purpose    UserTopicPurpose
+  profile    Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  topic      Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, topicId, purpose])
+}
+
+model FavoriteUser {
+  id              String   @id @default(cuid())
+  userId          String
+  favoriteUserId  String
+  createdAt       DateTime @default(now())
+  user            User     @relation("FavoriteBy", fields: [userId], references: [id], onDelete: Cascade)
+  favoriteUser    User     @relation("FavoriteTo", fields: [favoriteUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, favoriteUserId])
+}
+
+model CoffeeRequest {
+  id               String                @id @default(cuid())
+  senderId         String
+  receiverId       String
+  subject          String
+  preferredDate    String
+  timeSlot         String
+  meetingStyle     CommunicationPreference
+  location         String
+  discussionTopics String
+  notes            String
+  status           CoffeeRequestStatus   @default(PENDING)
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  sender           User                  @relation("RequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver         User                  @relation("RequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id            String         @id @default(cuid())
+  authorId      String
+  title         String
+  content       String
+  coverImageUrl String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topics        PostTopic[]
+  likes         PostLike[]
+  favorites     PostFavorite[]
+  comments      Comment[]
+}
+
+model PostTopic {
+  postId   String
+  topicId  String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([postId, topicId])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model PostFavorite {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}

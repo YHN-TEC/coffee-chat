@@ -1,0 +1,10 @@
+.next
+.npm-cache
+.home
+.tools
+node_modules
+.env
+.env.local
+.env.development
+.env.production
+.DS_Store
