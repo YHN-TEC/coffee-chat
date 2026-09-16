@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellRing, BookHeart, Coffee, Compass, LogOut, Newspaper, UserCircle2 } from "lucide-react";
+import { BellRing, BookHeart, Coffee, Compass, LogOut, Newspaper, Sparkles, UserCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/discover", label: "发现", icon: Compass },
+  { href: "/match", label: "AI 邀约", icon: Sparkles },
   { href: "/posts", label: "社区", icon: Newspaper },
   { href: "/requests", label: "邀约", icon: BellRing },
   { href: "/favorites", label: "我的收藏", icon: BookHeart },

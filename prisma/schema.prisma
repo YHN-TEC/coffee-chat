@@ -64,6 +64,8 @@ model User {
   postLikes     PostLike[]
   postFavorites PostFavorite[]
   comments      Comment[]
+  aiMatchSessions AiMatchSession[] @relation("AiMatchRequester")
+  aiMatchRecommendations AiMatchRecommendation[] @relation("AiMatchCandidate")
 }
 
 model Profile {
@@ -128,10 +130,49 @@ model CoffeeRequest {
   discussionTopics String
   notes            String
   status           CoffeeRequestStatus   @default(PENDING)
+  source           String                @default("MANUAL")
+  aiSessionId      String?
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   sender           User                  @relation("RequestSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiver         User                  @relation("RequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  aiSession        AiMatchSession?       @relation(fields: [aiSessionId], references: [id], onDelete: SetNull)
+}
+
+model AiMatchSession {
+  id              String                @id @default(cuid())
+  requesterId     String
+  background      String
+  goal            String
+  preferredDate   String
+  timeSlot        String
+  meetingStyle    CommunicationPreference
+  model           String
+  fallbackUsed    Boolean               @default(false)
+  latencyMs       Int
+  createdAt       DateTime              @default(now())
+  requester       User                  @relation("AiMatchRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recommendations AiMatchRecommendation[]
+  requests        CoffeeRequest[]
+}
+
+model AiMatchRecommendation {
+  id                String                @id @default(cuid())
+  sessionId         String
+  candidateId       String
+  rank              Int
+  score             Int
+  reason            String
+  subject           String
+  preferredDate     String
+  timeSlot          String
+  meetingStyle      CommunicationPreference
+  location          String
+  discussionTopics  String
+  notes             String
+  createdAt         DateTime              @default(now())
+  session           AiMatchSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  candidate         User                  @relation("AiMatchCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
 }
 
 model Post {

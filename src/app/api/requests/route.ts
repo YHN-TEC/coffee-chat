@@ -1,10 +1,10 @@
-import { coffeeRequestSchema } from "@/lib/validations";
+import { aiRequestSchema } from "@/lib/validations";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const user = await requireUser();
-  const parsed = coffeeRequestSchema.safeParse(await request.json());
+  const parsed = aiRequestSchema.safeParse(await request.json());
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0]?.message || "邀约信息有误" }, { status: 400 });
   }
@@ -24,6 +24,8 @@ export async function POST(request: Request) {
       location: parsed.data.location,
       discussionTopics: parsed.data.discussionTopics,
       notes: parsed.data.notes,
+      source: parsed.data.source || "MANUAL",
+      aiSessionId: parsed.data.aiSessionId || null,
     },
   });
 

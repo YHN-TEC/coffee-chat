@@ -47,6 +47,19 @@ export const coffeeRequestSchema = z.object({
   notes: z.string().trim().min(6, "请填写对方需要提前了解的信息"),
 });
 
+export const aiRequestSchema = coffeeRequestSchema.extend({
+  source: z.string().trim().optional(),
+  aiSessionId: z.string().trim().optional(),
+});
+
+export const aiMatchSchema = z.object({
+  background: z.string().trim().min(10, "请至少用 10 个字介绍你的背景"),
+  goal: z.string().trim().min(10, "请至少用 10 个字描述交流目标"),
+  preferredDate: z.string().trim().min(1, "请选择期望日期"),
+  timeSlot: z.string().trim().min(4, "请填写期望时间段"),
+  meetingStyle: z.enum(CommunicationPreference),
+});
+
 export const postSchema = z.object({
   title: z.string().trim().min(6, "标题至少 6 个字").max(60, "标题最多 60 个字"),
   content: z.string().trim().min(30, "正文至少 30 个字").max(1000, "正文最多 1000 个字"),
